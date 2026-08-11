@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.4.0
+    container_name: dev-jpetstore-db
+
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_ja_0900_as_cs
+
+    restart: always
+
+    environment:
+      MYSQL_ROOT_PASSWORD: jpetstore
+      MYSQL_DATABASE: jpetstore_db
+      MYSQL_USER: jpetstore
+      MYSQL_PASSWORD: jpetstore
+      TZ: 'Asia/Tokyo'
+    ports:
+      - "127.0.0.1:3306:3306"
+    volumes:
+      # 永続化ボリューム（データを保持）
+      - jpetstore_db:/var/lib/mysql
+
+volumes:
+  jpetstore_db:
+    driver: local

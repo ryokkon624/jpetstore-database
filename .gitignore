@@ -1,0 +1,14 @@
+# Gradle Build Results and Cache
+/build
+.gradle/
+!/gradle/wrapper/gradle-wrapper.jar
+!/gradle/wrapper/gradle-wrapper.properties
+bin/
+
+# IntelliJ IDEA / IDE Files
+.idea/
+*.iml
+
+# OS Files
+.DS_Store
+Thumbs.db

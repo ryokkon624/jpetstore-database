@@ -1,0 +1,53 @@
+// --- Flyway(MySQL) を plugin 実行クラスパスへ ---
+buildscript {
+    repositories { mavenCentral() }
+    dependencies {
+        classpath "org.flywaydb:flyway-mysql:11.14.1"
+    }
+}
+
+plugins {
+    id "java"
+    id "org.flywaydb.flyway" version "11.14.1"
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+        vendor = JvmVendorSpec.AMAZON
+    }
+}
+
+repositories { mavenCentral() }
+
+// --- JDBC ドライバ（プロジェクト実行クラスパス） ---
+dependencies {
+    runtimeOnly "com.mysql:mysql-connector-j:8.0.33"
+}
+
+// --- Flyway 設定（ここが要） ---
+flyway {
+    url = "jdbc:mysql://localhost:3306/jpetstore_db?useSSL=false&allowPublicKeyRetrieval=true"
+    user = "jpetstore"
+    password = "jpetstore"
+    driver = "com.mysql.cj.jdbc.Driver"
+    locations = ["filesystem:flyway/sql"]
+    cleanDisabled = false
+}
+
+// --- m_code → frontend(TypeScript) enum 生成 ---
+tasks.register("generateEnums", JavaExec) {
+    group = "codegen"
+    description = "Generate enum constants for frontend (TypeScript) from m_code"
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = "com.example.jpetstore.database.tool.MultiEnumGenerator"
+}
+
+// --- 開発・テスト用データ（flyway/sql-test）を追加適用 ---
+tasks.register("seedDevData", org.flywaydb.gradle.task.FlywayMigrateTask) {
+    group = "flyway"
+    description = "Apply dev/test-only data migrations (flyway/sql-test)."
+    dependsOn("flywayMigrate")
+
+    locations = ["filesystem:flyway/sql-test"]
+}
