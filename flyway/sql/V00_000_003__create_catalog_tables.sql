@@ -100,6 +100,7 @@ CREATE TABLE m_item (
                            ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新日時'
     , PRIMARY KEY (item_id)
     , KEY idx_m_item_product_id (product_id)
+    , KEY idx_m_item_supplier_id (supplier_id)
     , CONSTRAINT fk_m_item_product_id FOREIGN KEY (product_id)
         REFERENCES m_product (product_id) ON DELETE RESTRICT ON UPDATE RESTRICT
     , CONSTRAINT fk_m_item_supplier_id FOREIGN KEY (supplier_id)

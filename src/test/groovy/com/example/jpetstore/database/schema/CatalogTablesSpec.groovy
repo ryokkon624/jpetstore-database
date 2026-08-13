@@ -25,6 +25,16 @@ class CatalogTablesSpec extends SchemaMigrationSpecBase {
         columnOf("m_item", "supplier_id") != null
     }
 
+    def "m_item.supplier_id に明示セカンダリインデックスが付与されている（product_idと同じ扱い）"() {
+        expect:
+        sql.firstRow("""
+            SELECT INDEX_NAME
+              FROM information_schema.STATISTICS
+             WHERE TABLE_SCHEMA = ${DB_NAME} AND TABLE_NAME = 'm_item'
+               AND COLUMN_NAME = 'supplier_id' AND INDEX_NAME = 'idx_m_item_supplier_id'
+        """) != null
+    }
+
     def "AC4: m_item.#column は decimal(10,2) である"() {
         given:
         def col = columnOf("m_item", column)
