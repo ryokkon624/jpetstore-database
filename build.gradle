@@ -8,6 +8,7 @@ buildscript {
 
 plugins {
     id "java"
+    id "groovy"
     id "org.flywaydb.flyway" version "11.14.1"
 }
 
@@ -21,8 +22,23 @@ java {
 repositories { mavenCentral() }
 
 // --- JDBC ドライバ（プロジェクト実行クラスパス） ---
+// --- テスト（Groovy + Spock + Testcontainers[MySQL]）。information_schema 表明テストで
+//     Flyway マイグレーション（flyway/sql・flyway/sql-test）を Docker 上の MySQL 8.4 に適用し検証する。 ---
 dependencies {
     runtimeOnly "com.mysql:mysql-connector-j:8.0.33"
+
+    testImplementation "org.apache.groovy:groovy:4.0.32"
+    testImplementation "org.apache.groovy:groovy-sql:4.0.32"
+    testImplementation "org.spockframework:spock-core:2.3-groovy-4.0"
+    testImplementation "org.testcontainers:mysql:1.21.3"
+    testImplementation "org.flywaydb:flyway-core:11.14.1"
+    testImplementation "org.flywaydb:flyway-mysql:11.14.1"
+    testImplementation "com.mysql:mysql-connector-j:8.0.33"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.10.3"
+}
+
+test {
+    useJUnitPlatform()
 }
 
 // --- Flyway 設定（ここが要） ---
@@ -44,10 +60,13 @@ tasks.register("generateEnums", JavaExec) {
 }
 
 // --- 開発・テスト用データ（flyway/sql-test）を追加適用 ---
+// locations は flyway/sql を含めて渡すこと。sql-test だけを渡すと、
+// flywayMigrate で適用済みの flyway/sql 側マイグレーションが「現在の locations から解決できない」
+// として Flyway の validate が失敗する（Detected applied migration not resolved locally）。
 tasks.register("seedDevData", org.flywaydb.gradle.task.FlywayMigrateTask) {
     group = "flyway"
     description = "Apply dev/test-only data migrations (flyway/sql-test)."
     dependsOn("flywayMigrate")
 
-    locations = ["filesystem:flyway/sql-test"]
+    locations = ["filesystem:flyway/sql", "filesystem:flyway/sql-test"]
 }
