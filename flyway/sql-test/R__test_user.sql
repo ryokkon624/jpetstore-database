@@ -57,3 +57,48 @@ SELECT a.user_id, 'english', NULL,
   FROM m_account a
  WHERE a.username = 'ac_neg1_user'
    AND NOT EXISTS (SELECT 1 FROM m_profile p WHERE p.user_id = a.user_id);
+
+/* ============================================================
+   demo_user : ログイン実証用フィクスチャ（#19 AC2/AC-neg1）
+     - 「既知PW＋実bcryptハッシュ」のユーザーが1件必要（#19 備考）。既定弱資格情報
+       （j2ee/j2ee 等・SBD-6）は使わない。
+     - password_hash は実際に PasswordEncoderFactories.createDelegatingPasswordEncoder()
+       （jpetstore-backend の PasswordEncoderConfig）で下記の平文を encode() して得た値を
+       そのまま貼り付けている（捏造リテラルではない）。
+     - 開発用の既知平文（ローカル動作確認専用。本番シードではない）: Sprint3-DemoLogin!26
+   ============================================================ */
+INSERT INTO m_account (
+    username, email, first_name, last_name, status,
+    address1, address2, city, state, postal_code, country, phone,
+    create_user_id, create_program, created_at,
+    update_user_id, update_program, updated_at
+)
+SELECT 'demo_user', 'demo-user@example.com', 'Demo', 'User', 'OK',
+       '1 Demo St', NULL, 'Demoville', 'CA', '90000', 'USA', '555-0101',
+       NULL, 'INIT_DATA', NOW(6),
+       NULL, 'INIT_DATA', NOW(6)
+ WHERE NOT EXISTS (SELECT 1 FROM m_account WHERE username = 'demo_user');
+
+INSERT INTO m_signon (
+    user_id, password_hash,
+    create_user_id, create_program, created_at,
+    update_user_id, update_program, updated_at
+)
+SELECT a.user_id, '{bcrypt}$2a$10$VlmAJIY/yuCIOupZCz4wHeciXuLjUyXLR4.aXxvack9pjjfBF0Hfq',
+       NULL, 'INIT_DATA', NOW(6),
+       NULL, 'INIT_DATA', NOW(6)
+  FROM m_account a
+ WHERE a.username = 'demo_user'
+   AND NOT EXISTS (SELECT 1 FROM m_signon s WHERE s.user_id = a.user_id);
+
+INSERT INTO m_profile (
+    user_id, language_preference, favorite_category_id,
+    create_user_id, create_program, created_at,
+    update_user_id, update_program, updated_at
+)
+SELECT a.user_id, 'english', NULL,
+       NULL, 'INIT_DATA', NOW(6),
+       NULL, 'INIT_DATA', NOW(6)
+  FROM m_account a
+ WHERE a.username = 'demo_user'
+   AND NOT EXISTS (SELECT 1 FROM m_profile p WHERE p.user_id = a.user_id);
