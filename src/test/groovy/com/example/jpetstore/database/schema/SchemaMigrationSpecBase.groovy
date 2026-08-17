@@ -78,6 +78,27 @@ abstract class SchemaMigrationSpecBase extends Specification {
     }
 
     /**
+     * information_schema.STATISTICS から指定索引の構成列を SEQ_IN_INDEX 順で返す（存在しなければ空リスト）。
+     * 複合索引の列順序（左端prefix）を検証する際に使う。
+     */
+    static List<Map> indexColumnsOf(String tableName, String indexName) {
+        sql.rows("""
+            SELECT SEQ_IN_INDEX, COLUMN_NAME
+              FROM information_schema.STATISTICS
+             WHERE TABLE_SCHEMA = ${DB_NAME} AND TABLE_NAME = ${tableName} AND INDEX_NAME = ${indexName}
+             ORDER BY SEQ_IN_INDEX
+        """)
+    }
+
+    static boolean indexExists(String tableName, String indexName) {
+        sql.firstRow("""
+            SELECT INDEX_NAME
+              FROM information_schema.STATISTICS
+             WHERE TABLE_SCHEMA = ${DB_NAME} AND TABLE_NAME = ${tableName} AND INDEX_NAME = ${indexName}
+        """) != null
+    }
+
+    /**
      * 指定列を持つ業務テーブル名の一覧（{@code flyway_schema_history} は Flyway が内部管理する
      * メタデータ表で "version" 列を持つが業務テーブルではないため除外する）。
      */

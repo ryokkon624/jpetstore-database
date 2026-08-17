@@ -94,4 +94,21 @@ class OrderInventoryTablesSpec extends SchemaMigrationSpecBase {
         where:
         table << ["t_order", "t_order_line", "t_inventory"]
     }
+
+    def "Q1(#9): t_order に (user_id, order_id) 複合索引が seq順(user_id=1, order_id=2)で存在する"() {
+        given:
+        def cols = indexColumnsOf("t_order", "idx_t_order_user_id_order_id")
+
+        expect:
+        cols.size() == 2
+        cols[0].SEQ_IN_INDEX == 1
+        cols[0].COLUMN_NAME == "user_id"
+        cols[1].SEQ_IN_INDEX == 2
+        cols[1].COLUMN_NAME == "order_id"
+    }
+
+    def "Q1(#9): 旧単一列索引 idx_t_order_user_id は複合索引に置換され残っていない（重複索引防止）"() {
+        expect:
+        !indexExists("t_order", "idx_t_order_user_id")
+    }
 }
