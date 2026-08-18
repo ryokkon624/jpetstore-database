@@ -20,6 +20,10 @@
 --
 --   WHO はローカルの Interceptor が効かないためリテラル 'INIT_DATA' を明示する
 --   （.claude/rules/database.md）。
+--
+--   #36 Sprint Review指摘対応: m_profile の color_scheme_preference は
+--   V00_000_013（NOT NULL DEFAULT 'system'）の暗黙DEFAULTに頼らず列名リスト＋値で明示する
+--   （version 等の他列も含め、フィクスチャは暗黙DEFAULT依存を避け値を明示する方針に統一）。
 -- ------------------------------------------------------------
 
 INSERT INTO m_account (
@@ -47,11 +51,11 @@ SELECT a.user_id, '$2a$10$ACNeg1FixtureOnlyDummyBcryptHashXXXXXXXXXXXXXXXXXXXXX'
    AND NOT EXISTS (SELECT 1 FROM m_signon s WHERE s.user_id = a.user_id);
 
 INSERT INTO m_profile (
-    user_id, language_preference, favorite_category_id,
+    user_id, language_preference, color_scheme_preference, favorite_category_id,
     create_user_id, create_program, created_at,
     update_user_id, update_program, updated_at
 )
-SELECT a.user_id, 'english', NULL,
+SELECT a.user_id, 'english', 'system', NULL,
        NULL, 'INIT_DATA', NOW(6),
        NULL, 'INIT_DATA', NOW(6)
   FROM m_account a
@@ -92,11 +96,11 @@ SELECT a.user_id, '{bcrypt}$2a$10$VlmAJIY/yuCIOupZCz4wHeciXuLjUyXLR4.aXxvack9pjj
    AND NOT EXISTS (SELECT 1 FROM m_signon s WHERE s.user_id = a.user_id);
 
 INSERT INTO m_profile (
-    user_id, language_preference, favorite_category_id,
+    user_id, language_preference, color_scheme_preference, favorite_category_id,
     create_user_id, create_program, created_at,
     update_user_id, update_program, updated_at
 )
-SELECT a.user_id, 'english', NULL,
+SELECT a.user_id, 'english', 'system', NULL,
        NULL, 'INIT_DATA', NOW(6),
        NULL, 'INIT_DATA', NOW(6)
   FROM m_account a
